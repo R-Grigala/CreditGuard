@@ -1,0 +1,23 @@
+# Ignore database files
+*.sqlite3
+*.db
+
+# Ignore static files directory
+/static/
+
+# Ignore media files directory
+/media/
+
+# Ignore virtual environment
+venv/
+.env/
+
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+
+# Ignore local settings
+/local_settings.py
+
+# Ignore logs
+/logs/
