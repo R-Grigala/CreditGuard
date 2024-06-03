@@ -51,6 +51,7 @@ class CardSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         card_number = validated_data.pop('card_number')
+        ccv = validated_data.pop('ccv')
         user = self.context['request'].user if 'request' in self.context and self.context['request'].user.is_authenticated else None
 
         validated_data['censored_number'] = self.get_censored_number(card_number)
