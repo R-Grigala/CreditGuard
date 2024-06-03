@@ -1,11 +1,13 @@
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
+from rest_framework.test import APIClient
 
 import time
 
 class CardsTestCase(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='new_user', password='password123')
+        self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
     def test_valid_card_creation(self):
@@ -36,11 +38,12 @@ class CardsTestCase(APITestCase):
 
 
 class CardsSpeedTestCase(APITestCase):
-    def test_speed_of_card_creation(self):
-        # ავტორიზაცია აუცილებელია card-ის დამატების დროს, ბაზების კავშირის გამო user(FK to user),
+    def setUp(self):
         self.user = User.objects.create_user(username='test_admin', password='password123')
+        self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
+    def test_speed_of_card_creation(self):
         start_time = time.time()
         # გავტესტოთ card -ის 100 მონაცემზე სისწრაფე
         for i in range(100):
