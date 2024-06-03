@@ -13,13 +13,21 @@ class CardViewSet(APIView):
 
     def get(self, request):
         cards = Card.objects.filter(user=request.user)
-        serializer = CardSerializer(cards, many=True)
+        title = request.query_params.get('title')
+        ordering = request.query_params.get('ordering', '-creation_date')
+        
+        if title:
+            cards = Card.objects.filter(user=request.user, title__icontains=title)
+    
+        cards = cards.order_by(ordering)
+
+        serializer = CardSerializer(cards, many=True, context={'request': request})
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = CardSerializer(data=request.data)
+        serializer = CardSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
