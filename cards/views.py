@@ -7,20 +7,10 @@ from rest_framework import status
 
 class CardViewSet(APIView):
     queryset = Card.objects.all()
-
-    # Require authentication for this endpoint
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        cards = Card.objects.filter(user=request.user)
-        title = request.query_params.get('title')
-        ordering = request.query_params.get('ordering', '-creation_date')
-        
-        if title:
-            cards = Card.objects.filter(user=request.user, title__icontains=title)
-    
-        cards = cards.order_by(ordering)
-
+        cards = self.get_queryset(request)
         serializer = CardSerializer(cards, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -32,7 +22,18 @@ class CardViewSet(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.filter(user=self.request.user)
+    def get_queryset(self, request):
+        # ვუზრუნველყოთ მხოლოდ user-ის შესაბამისი card-ის წამოღება ბაზიდან
+        queryset = Card.objects.filter(user=request.user)
+
+        # შექმნის თარიღის მიხედვით ordering-ის შესაძლებლობა
+        ordering = request.query_params.get('ordering', '-creation_date')
+        if ordering:
+            queryset = queryset.order_by(ordering)
+
+        # title-ით ფილტრაცია
+        title = request.query_params.get('title')
+        if title:
+            queryset = Card.objects.filter(user=request.user, title__icontains=title)
+
         return queryset
