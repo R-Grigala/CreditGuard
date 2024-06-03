@@ -1,28 +1,28 @@
-from rest_framework import viewsets, permissions
-from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from .models import Card
+from rest_framework.response import Response
 from .serializers import CardSerializer
+from rest_framework import status
 
-class CardViewSet(viewsets.ViewSet):
+class CardViewSet(APIView):
     queryset = Card.objects.all()
-    serializer_class = CardSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    ordering_fields = ['created_at']
-    filterset_fields = ['title']
 
-    def user_card(self, request):
-        # Retrieve cards created by the authenticated user
+    # Require authentication for this endpoint
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
         cards = Card.objects.filter(user=request.user)
         serializer = CardSerializer(cards, many=True)
         return Response(serializer.data)
 
-    def create(self, request):
+    def post(self, request):
         serializer = CardSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
-            return Response(serializer.data, status=201)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer.errors, status=400)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
     def get_queryset(self):
         queryset = super().get_queryset()
